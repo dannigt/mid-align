@@ -66,4 +66,5 @@ torchrun --nnodes $HOST_NUM --node_rank $INDEX --nproc_per_node $nproc_per_node 
     --metric_for_best_model "eval_loss" \
     --patience 5 \
     --output_dir $OUTDIR \
+    --only_train_language_modeling \
     --disable_tqdm True --overwrite_output_dir 2>&1  | tee -a $OUTDIR/train.log

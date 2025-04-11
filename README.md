@@ -75,6 +75,11 @@ bash ./scripts/train_baseline.sh
 
 This trains the model with standard task-specific objectives.
 
+
+**Important Note**: If you are using the code from this repository, 
+please include the flag `--only_train_language_modeling` to the baseline training command. 
+This flag is not needed when using unmodified code from HuggingFace.
+
 ### 2. Training with Alignment
 
 ```bash
@@ -173,7 +178,7 @@ torchrun --nnodes $HOST_NUM --node_rank $INDEX --nproc_per_node $nproc_per_node 
 
 </details>
 
-Our training scripts adapted from [ParroT](https://github.com/wxjiao/ParroT).
+Our training scripts are adapted from [ParroT](https://github.com/wxjiao/ParroT).
 
 The configuration files for DeepSpeed and LoRA are included in `./config`.
 
