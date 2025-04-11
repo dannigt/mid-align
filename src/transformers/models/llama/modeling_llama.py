@@ -1026,9 +1026,6 @@ class LlamaModel(LlamaPreTrainedModel):
             # run task-specific
             run_normal_forward_this_layer = not self.only_train_contrastive
 
-            if run_contrastive_examples_this_layer:
-                raise ValueError
-
             if output_hidden_states:
                 if run_normal_forward_this_layer:
                     all_hidden_states += (hidden_states,)
