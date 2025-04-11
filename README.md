@@ -77,7 +77,7 @@ This trains the model with standard task-specific objectives.
 
 
 **Important Note**: If you are using the code from this repository, 
-please include the flag `--only_train_language_modeling` to the baseline training command. 
+please include the flag `--only_train_language_modeling` in the baseline training command. 
 This flag is not needed when using unmodified code from HuggingFace.
 
 ### 2. Training with Alignment
