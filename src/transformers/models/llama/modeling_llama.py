@@ -131,7 +131,6 @@ class LlamaRMSNorm(nn.Module):
 ALL_LAYERNORM_LAYERS.append(LlamaRMSNorm)
 
 
-# TODO(DL): read
 class LlamaRotaryEmbedding(nn.Module):
     def __init__(
         self,
@@ -915,17 +914,6 @@ class LlamaModel(LlamaPreTrainedModel):
 
         self.inject_Ws = config.inject_Ws
         self.apply_inverse = config.apply_inverse
-        # self.output_interal_hidden_states = config.output_interal_hidden_states
-        #
-        # # TODO(DL): load all alignment matrices
-        # if self.inject_Ws:
-        #     align_mat_path = Path(config.alignment_matrices_path)
-        #     all_align_mat = []
-        #     for i in range(len(self.layers) + 1):
-        #         all_align_mat.append(np.load(align_mat_path / f"W_SVD_layer{i}.npy"))
-        #     all_align_mat = torch.from_numpy(np.array(all_align_mat)).to(torch.bfloat16)  # num_layer x d x d
-        #     self.register_buffer(f"Ws", all_align_mat)
-        #     logger.info(f"Loaded alignment matrices from {align_mat_path}~~~~~~~~~~~~~~~~~~~~~~~~")
 
     def get_input_embeddings(self):
         return self.embed_tokens
@@ -1038,21 +1026,12 @@ class LlamaModel(LlamaPreTrainedModel):
             # run task-specific
             run_normal_forward_this_layer = not self.only_train_contrastive
 
+            if run_contrastive_examples_this_layer:
+                raise ValueError
+
             if output_hidden_states:
                 if run_normal_forward_this_layer:
                     all_hidden_states += (hidden_states,)
-                # if run_contrastive_examples_this_layer:     # store hidden states contrastive
-                    # all_hidden_states_parallel_0 += (hidden_states_parallel[0],)
-                    # all_hidden_states_parallel_1 += (hidden_states_parallel[1],)
-
-            # if self.inject_Ws:
-            #     pre_W = self.Ws[decoder_layer_idx] #if decoder_layer_idx >= 15 else None
-            #     if self.apply_inverse:
-            #         post_W = self.Ws[decoder_layer_idx].T #if decoder_layer_idx >= 15 else None
-            #     else:
-            #         post_W = None
-            # else:
-            #     pre_W, post_W = None, None
 
             if self.gradient_checkpointing and self.training:
                 if run_normal_forward_this_layer:
@@ -1066,8 +1045,6 @@ class LlamaModel(LlamaPreTrainedModel):
                         use_cache,
                         cache_position,
                         position_embeddings,
-                        # pre_W=pre_W,
-                        # post_W=post_W,
                     )
                 if run_contrastive_examples_this_layer:
                     layer_outputs_parallel = {}
@@ -1094,8 +1071,6 @@ class LlamaModel(LlamaPreTrainedModel):
                         use_cache=use_cache,
                         cache_position=cache_position,
                         position_embeddings=position_embeddings,
-                        # pre_W=pre_W,
-                        # post_W=post_W,
                     )
 
                 if run_contrastive_examples_this_layer:
@@ -1114,24 +1089,11 @@ class LlamaModel(LlamaPreTrainedModel):
 
             if run_normal_forward_this_layer:
                 hidden_states = layer_outputs[0]
-                if use_cache:   # TODO(DL): inference
+                if use_cache:
                     next_decoder_cache = layer_outputs[2 if output_attentions else 1]
                 if output_attentions:
                     all_self_attns += (layer_outputs[1],)
 
-                #     # TODO(DL): added for injected map English to non-English
-                #     if decoder_layer_idx == 15:  # 16th layer
-                #         # hidden_states = layer_outputs[0] @ self.Ws[decoder_layer_idx + 1].T # for non-En --> en
-                #         hidden_states = layer_outputs[0] @ self.Ws[decoder_layer_idx + 1]  # for En --> non->en
-                #     elif decoder_layer_idx >= 16:  # 17th layer on:
-                #         # apply inverse of previous layer
-                #         # hidden_states = layer_outputs[0] @ self.Ws[decoder_layer_idx]
-                #         hidden_states = layer_outputs[0] @ self.Ws[decoder_layer_idx].T
-                #         # apply this layer's transformation
-                #         # hidden_states = hidden_states @ self.Ws[decoder_layer_idx + 1].T
-                #         hidden_states = hidden_states @ self.Ws[decoder_layer_idx + 1]
-                #     else:
-                #         hidden_states = layer_outputs[0]
             if run_contrastive_examples_this_layer:
                 hidden_states_parallel[0] = layer_outputs_parallel[0][0]
                 hidden_states_parallel[1] = layer_outputs_parallel[1][0]
@@ -1144,16 +1106,11 @@ class LlamaModel(LlamaPreTrainedModel):
         if not self.only_train_contrastive:
             hidden_states = self.norm(hidden_states)
 
-        # TODO(DL): layer norm for contrastive examples?
-        # if additional_loss_layer == len(self.layers):   # additional loss is on the last layer (element 32)
-        #     hidden_states_parallel_0 = self.norm(hidden_states_parallel_0)
-        #     hidden_states_parallel_1 = self.norm(hidden_states_parallel_1)
-
         # add hidden states from the last decoder layer
         if output_hidden_states:    # add last set of hidden states
             if not self.only_train_contrastive:     # LM
                 all_hidden_states += (hidden_states,)
-            if not self.only_train_language_modeling: # and run_contrastive_examples_this_layer:
+            if not self.only_train_language_modeling:   # and run_contrastive_examples_this_layer:
                 all_hidden_states_parallel_0 += (hidden_states_parallel[0],)
                 all_hidden_states_parallel_1 += (hidden_states_parallel[1],)
 
@@ -1169,7 +1126,6 @@ class LlamaModel(LlamaPreTrainedModel):
             past_key_values=next_cache,
             hidden_states=all_hidden_states,
             hidden_states_parallel=[all_hidden_states_parallel_0, all_hidden_states_parallel_1],# tuple with L elements each with B x T x H
-            # hidden_states_internal=None,    # TODO(DL): add hidden_states_in the order of (q, k, v, o, gate, up, down)
             attentions=all_self_attns,
         )
 
@@ -1245,7 +1201,7 @@ class LlamaModel(LlamaPreTrainedModel):
         return causal_mask
 
 
-class LlamaForCausalLM(LlamaPreTrainedModel):   # TODO: subclass this to a special model
+class LlamaForCausalLM(LlamaPreTrainedModel):
     _tied_weights_keys = ["lm_head.weight"]
 
     def __init__(self, config):
@@ -1264,8 +1220,6 @@ class LlamaForCausalLM(LlamaPreTrainedModel):   # TODO: subclass this to a speci
         self.contrastive_loss_weight = config.contrastive_loss_weight
         self.unidirectional_contrastive_loss = config.unidirectional_contrastive_loss
         self.contrastive_pooling_type = config.contrastive_pooling_type
-        # self.only_train_contrastive = config.only_train_contrastive
-        # self.only_train_language_modeling = config.only_train_language_modeling
 
     def get_input_embeddings(self):
         return self.model.embed_tokens
