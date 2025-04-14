@@ -36,7 +36,7 @@ pip install deepspeed
 # flash attention
 pip install flash-attn --no-build-isolation
 # other huggingface packags
-pip install datasets evalute peft
+pip install datasets evaluate peft
 # helper packages
 pip install skikit-learn hf_mtask_trainer 
 # for evaluation
