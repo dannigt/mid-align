@@ -193,8 +193,12 @@ lang="en" # replace by other langauge codes (see massive_lang_map in scripts/uti
 python -m scripts.run_inference_massive --base-model-name $basemodel \
                                         --peft-model-id $path2peftmodel \
                                         --lang $lang \ 
-                                        --partition "test"
+                                        --partition "test" \
+                                        --output-path $path2outputjson
                                         
+# Extract predictions from json outputs
+python scripts.extract_json_output.py $path2outputjson $path2output
+                                                                     
 # Evaluate performance
 python -m scripts.eval_massive --pred-slots-file $path2output \
                                --lang $lang \
