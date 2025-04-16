@@ -190,7 +190,7 @@ path2peftmodel="" # replace by path to finetuned model
 lang="en" # replace by other langauge codes (see massive_lang_map in scripts/utils.py)
 
 # Run inference
-python -m scripts.run_inference_massive --model-name $basemodel \
+python -m scripts.run_inference_massive --base-model-name $basemodel \
                                         --peft-model-id $path2peftmodel \
                                         --lang $lang \ 
                                         --partition "test"
