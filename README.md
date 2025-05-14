@@ -40,7 +40,7 @@ pip install datasets evaluate peft
 # helper packages
 pip install skikit-learn hf_mtask_trainer 
 # for evaluation
-pip install seqeval levenshtein
+pip install seqeval levenshtein sacrebleu unbabel-comet
 ```
 Note: Flash attention is optional. If installation is unsuccessful, remove [this line](https://github.com/dannigt/mid-align/blob/master/scripts/run_clm_lora.py#L643) to train without it.
 
@@ -197,7 +197,7 @@ python -m scripts.run_inference_massive --base-model-name $basemodel \
                                         --output-path $path2outputjson
                                         
 # Extract predictions from json outputs
-python scripts.extract_json_output.py $path2outputjson $path2output
+python scripts/extract_json_output.py $path2outputjson $path2output
                                                                      
 # Evaluate performance
 python -m scripts.eval_massive --pred-slots-file $path2output \
