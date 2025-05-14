@@ -103,14 +103,14 @@ def main(args):
                 all_prompt.extend(entry)
                 all_generated.extend(generated)
 
-        with open(args.output_path, "w") as f:
+        with open(result_directory / args.output_path, "w") as f:
             for prompt_line, output_line in zip(all_prompt, all_generated):
                 f.write(json.dumps({"prompt": prompt_line,
                                     "prediction": output_line},
                                    ensure_ascii=False) + '\n')
     else:
         result_lines = []
-        with open(args.output_path, "r") as f:
+        with open(result_directory / args.output_path, "r") as f:
             for line in f:
                 result_lines.append(json.loads(line))
         all_generated = [line['prediction'] for line in result_lines]
