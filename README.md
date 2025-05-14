@@ -4,6 +4,8 @@
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![HuggingFace](https://img.shields.io/badge/🤗-Transformers-yellow)](https://huggingface.co/docs/transformers/index)
  
+Models coming soon!
+
 ## 📋 Overview
 This repository contains the implementation of [our paper](https://arxiv.org/pdf/2502.14830), 
 which aims to improve cross-lingual transfer in fine-tuned Large Language Models. 
@@ -184,6 +186,7 @@ The configuration files for DeepSpeed and LoRA are included in `./config`.
 
 ## 📈 Inference and Evaluation
 
+### Slot Filling
 ```bash
 basemodel="meta-llama/Meta-Llama-3-8B-Instruct"
 path2peftmodel="" # replace by path to finetuned model
@@ -205,6 +208,23 @@ python -m scripts.eval_massive --pred-slots-file $path2output \
                                --partition "test"
 ```
 
-(inference scripts for more datasets coming soon)
+### Machine Translation
+```bash
+basemodel="meta-llama/Meta-Llama-3-8B-Instruct"
+path2peftmodel=# replace by path to finetuned model
+source_lang="cs" # input language; other langauge codes in translation_lang_map in scripts/utils.py
+lang="en" # output language
+path2outputjson=${source_lang}-${lang}_"wmt23.json"
 
+# Run inference
+python -m scripts.run_inference_eval_wmt23 --base-model-name $basemodel \
+                                           --peft-model-id $path2peftmodel \
+                                           --source-lang $source_lang \
+                                           --lang $lang \
+                                           --output-path $path2outputjson \
+                                           --use-default-template False
+```
+Note: for llama 3, our training prompt template differed slightly from the default 
+(not using bos token, having a line break after each end-of-turn token).
+Please to set `--use-default-template False` reproduce the results from the paper.
 
