@@ -77,8 +77,8 @@ def main(args):
                                                                tokenize=False,
                                                                add_generation_prompt=True)
             # To be compatible with prompt template used in our pretrained llama model
-            if not args.use_default_template and args.base_model_name == "meta-llama/Meta-Llama-3-8B-Instruct":
-                prefix_in_template.replace("<|eot_id|>", "<|eot_id|>\n").replace("<|begin_of_text|>", "")
+            if args.no_default_template and args.base_model_name == "meta-llama/Meta-Llama-3-8B-Instruct":
+                prefix_in_template = prefix_in_template.replace("<|eot_id|>", "<|eot_id|>\n").replace("<|begin_of_text|>", "")
             datalist.append(prefix_in_template)
 
         print("\n1st sample:")
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     parser.add_argument("--beam-size", type=int, default=1, help="beam size")
     parser.add_argument("--max-new-tokens", type=int, default=512, help="max number of generated new tokens")
     parser.add_argument("--evaluation-only", action="store_true")
-    parser.add_argument("--use-default-template", action="store_false")
+    parser.add_argument("--no-default-template", action="store_true")
     args = parser.parse_args()
 
     main(args)

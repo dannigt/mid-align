@@ -222,9 +222,9 @@ python -m scripts.run_inference_eval_wmt23 --base-model-name $basemodel \
                                            --source-lang $source_lang \
                                            --lang $lang \
                                            --output-path $path2outputjson \
-                                           --use-default-template False
+                                           --no-default-template
 ```
 Note: for llama 3, our training prompt template differed slightly from the default 
 (not using bos token, having a line break after each end-of-turn token).
-Please to set `--use-default-template False` reproduce the results from the paper.
+Therefore please add `--no-default-template` to reproduce the results from the paper.
 
