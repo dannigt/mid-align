@@ -4,7 +4,17 @@
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![HuggingFace](https://img.shields.io/badge/🤗-Transformers-yellow)](https://huggingface.co/docs/transformers/index)
  
-Models coming soon!
+## 🧩 Models
+| Base Model   | Task                | LoRA Adapters                                                                                   | Note               |
+|--------------|---------------------|-------------------------------------------------------------------------------------------------|--------------------|
+| Meta-Llama-3-8B-Instruct | machine translation | [MT-baseline-LoRA](https://huggingface.co/danniliu/Meta-Llama-3-8B-Instruct-MT-baseline-LoRA)   | only supervised FT | 
+| Meta-Llama-3-8B-Instruct | machine translation | [MT-mid-align-LoRA](https://huggingface.co/danniliu/Meta-Llama-3-8B-Instruct-MT-mid-align-LoRA) | + mid-align        |
+| Meta-Llama-3-8B-Instruct | slot filling        | [SF-baseline-LoRA](https://huggingface.co/danniliu/Meta-Llama-3-8B-Instruct-SF-baseline-LoRA)   | only supervised FT | 
+| Meta-Llama-3-8B-Instruct | slot filling        | [SF-mid-align-LoRA](https://huggingface.co/danniliu/Meta-Llama-3-8B-Instruct-SF-mid-align-LoRA) | + mid-align        |
+| Qwen2.5-7B-Instruct | machine translation | [MT-baseline-LoRA](https://huggingface.co/danniliu/Qwen2.5-7B-Instruct-MT-baseline-LoRA)        | only supervised FT | 
+| Qwen2.5-7B-Instruct | machine translation | [MT-mid-align-LoRA](https://huggingface.co/danniliu/Qwen2.5-7B-Instruct-MT-mid-align-LoRA)      | + mid-align |
+| Qwen2.5-7B-Instruct | slot filling        | [SF-baseline-LoRA](https://huggingface.co/danniliu/Qwen2.5-7B-Instruct-SF-baseline-LoRA)        | only supervised FT | 
+| Qwen2.5-7B-Instruct | slot filling        | [SF-mid-align-LoRA](https://huggingface.co/danniliu/Qwen2.5-7B-Instruct-SF-mid-align-LoRA)      | + mid-align |
 
 ## 📋 Overview
 This repository contains the implementation of [our paper](https://arxiv.org/pdf/2502.14830), 
@@ -189,7 +199,7 @@ The configuration files for DeepSpeed and LoRA are included in `./config`.
 ### Slot Filling
 ```bash
 basemodel="meta-llama/Meta-Llama-3-8B-Instruct"
-path2peftmodel="" # replace by path to finetuned model
+path2peftmodel="danniliu/Meta-Llama-3-8B-Instruct-SF-baseline-LoRA" # or replace by local path to finetuned model
 lang="en" # replace by other langauge codes (see massive_lang_map in scripts/utils.py)
 
 # Run inference
@@ -197,7 +207,8 @@ python -m scripts.run_inference_massive --base-model-name $basemodel \
                                         --peft-model-id $path2peftmodel \
                                         --lang $lang \ 
                                         --partition "test" \
-                                        --output-path $path2outputjson
+                                        --output-path $path2outputjson \
+                                        --no-default-template
                                         
 # Extract predictions from json outputs
 python scripts/extract_json_output.py $path2outputjson $path2output
@@ -211,7 +222,7 @@ python -m scripts.eval_massive --pred-slots-file $path2output \
 ### Machine Translation
 ```bash
 basemodel="meta-llama/Meta-Llama-3-8B-Instruct"
-path2peftmodel=# replace by path to finetuned model
+path2peftmodel="danniliu/Meta-Llama-3-8B-Instruct-MT-baseline-LoRA" # or replace by local path to finetuned model
 source_lang="cs" # input language; other langauge codes in translation_lang_map in scripts/utils.py
 lang="en" # output language
 path2outputjson=${source_lang}-${lang}_"wmt23.json"
