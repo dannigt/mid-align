@@ -1256,8 +1256,8 @@ class Qwen2ForCausalLM(Qwen2PreTrainedModel):
 
         # loss = None
 
+        task_loss = 0
         if not self.model.only_train_contrastive:  # LM loss
-            task_loss = 0
             if labels is not None:
                 # Shift so that tokens < n predict n
                 shift_logits = logits[..., :-1, :].contiguous()
@@ -1270,18 +1270,24 @@ class Qwen2ForCausalLM(Qwen2PreTrainedModel):
                 shift_labels = shift_labels.to(shift_logits.device)
                 task_loss = loss_fct(shift_logits, shift_labels)
 
-            # self.report_metrics(loss1=loss, loss2=contrastive_loss)
-            if hasattr(self, "report_metrics"):  # checking if the report method is accessible or not is the robust practice
+            loss = task_loss + contrastive_loss    # 0 or as calculated before
+
+        else:  # only training contrastive
+            loss = contrastive_loss
+
+        if hasattr(self, "report_metrics"):  # checking if the report method is accessible or not is the robust practice
+            if self.training:   # log training stats
                 self.report_metrics(
                     task_loss=task_loss,
                     alignment_loss=contrastive_loss,
                     total_loss=task_loss + contrastive_loss,
                 )
-
-            loss = task_loss + contrastive_loss    # 0 or as calculated before
-
-        else:  # only training contrastive
-            loss = contrastive_loss
+            else:   # log eval stats
+                self.report_metrics(
+                    eval_task_loss=task_loss,
+                    eval_alignment_loss=contrastive_loss,
+                    eval_total_loss=task_loss + contrastive_loss,
+                )
 
         if not return_dict:
             output = (logits,) + outputs[1:]
