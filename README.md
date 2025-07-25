@@ -39,6 +39,8 @@ Our implementation builds upon Huggingface Transformer version `v4.43.4`.
 # create and activate conda environment
 conda create -n midalign python=3.9
 conda activate midalign
+# helper packages
+pip install skikit-learn hf_mtask_trainer 
 # install package and dependencies
 pip install -e .
 # pytorch
@@ -49,8 +51,6 @@ pip install deepspeed
 pip install flash-attn --no-build-isolation
 # other huggingface packags
 pip install datasets evaluate peft
-# helper packages
-pip install skikit-learn hf_mtask_trainer 
 # for evaluation
 pip install seqeval levenshtein sacrebleu unbabel-comet
 ```
