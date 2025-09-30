@@ -31,7 +31,7 @@ loss_distance_type="cosine"
 
 torchrun --nnodes $HOST_NUM --node_rank $INDEX --nproc_per_node $nproc_per_node \
     --master_addr $MASTER_ADDR --master_port $MASTER_PORT  \
-    ${train_path} \
+    ./scripts/run_clm_lora.py \
     --deepspeed ./config/deepspeed_config.json \
     --bf16 True \
     --bf16_full_eval True \
